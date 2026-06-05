@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DiaBloom AI 🌸 | Diabetes Risk Prediction</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* CSS variables handling both states dynamically */
+        :root {
+            /* Animation Palettes */
+            --bg-gradient: linear-gradient(-45deg, #FF9AA2, #FFB7B2, #E2F0CB, #B5EAD7);
+            --floating-icon-color: rgba(0, 0, 0, 0.15);
+            --floating-icon-shadow: rgba(0, 0, 0, 0.05);
+            
+            /* Theme Elements */
+            --pink-primary: #FFB7B2;
+            --mint-primary: #B5EAD7;
+            --mint-dark: #86D3B8;
+            --text-dark: #2C3E50;
+            --text-light: #7F8C8D;
+            --glass-bg: rgba(255, 255, 255, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --input-bg: rgba(255, 255, 255, 0.75);
+            --input-focus-bg: rgba(255, 255, 255, 0.95);
+            --card-shadow: rgba(0, 0, 0, 0.05);
+            --logo-bg: #FFFFFF;
+            --logo-shadow: rgba(255, 154, 162, 0.3);
+            
+            /* Results Styling */
+            --result-high-bg: #FFF0F0;
+            --result-high-border: #FF6B6B;
+            --result-high-text: #C0392B;
+            --result-low-bg: #F4FBF9;
+            --result-low-border: #2ECC71;
+            --result-low-text: #27AE60;
+        }
+
+        [data-theme="dark"] {
+            /* High-Contrast Light Animations over Dark Canvas */
+            --bg-gradient: linear-gradient(-45deg, #090d16, #1e112a, #061f14, #111827);
+            --floating-icon-color: rgba(255, 255, 255, 0.08);
+            --floating-icon-shadow: rgba(255, 255, 255, 0.05);
+            
+            /* Theme Elements overrides */
+            --text-dark: #F0F4F8;
+            --text-light: #94A3B8;
+            --glass-bg: rgba(15, 23, 42, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --input-focus-bg: rgba(255, 255, 255, 0.1);
+            --card-shadow: rgba(0, 0, 0, 0.4);
+            --logo-bg: rgba(255, 255, 255, 0.05);
+            --logo-shadow: rgba(0, 0, 0, 0.3);
+            
+            /* Dark-adapted Results Styling */
+            --result-high-bg: rgba(239, 68, 68, 0.12);
+            --result-high-border: #EF4444;
+            --result-high-text: #FCA5A5;
+            --result-low-bg: rgba(16, 185, 129, 0.08);
+            --result-low-border: #10B981;
+            --result-low-text: #A7F3D0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--bg-gradient);
+            background-size: 400% 400%;
+            animation: gradientBG 14s ease infinite;
+            overflow-x: hidden;
+            position: relative;
+            padding: 60px 20px 40px 20px;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Floating Theme Switcher Button */
+        .theme-toggle-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            color: var(--text-dark);
+            box-shadow: 0 4px 12px var(--card-shadow);
+        }
+
+        .theme-toggle-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .theme-toggle-btn .fa-sun { display: none; }
+        [data-theme="dark"] .theme-toggle-btn .fa-moon { display: none; }
+        [data-theme="dark"] .theme-toggle-btn .fa-sun { display: block; }
+
+        /* Floating Background Icons */
+        .floating-icons {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .floating-icons i {
+            position: absolute;
+            color: var(--floating-icon-color);
+            text-shadow: 0 0 10px var(--floating-icon-shadow);
+            animation: floatUp 18s ease-in-out infinite;
+            bottom: -50px;
+            transition: color 0.3s ease;
+        }
+
+        .floating-icons i:nth-child(1) { left: 10%; font-size: 2rem; animation-delay: 0s; }
+        .floating-icons i:nth-child(2) { left: 25%; font-size: 3rem; animation-delay: 2s; }
+        .floating-icons i:nth-child(3) { left: 45%; font-size: 1.5rem; animation-delay: 1s; }
+        .floating-icons i:nth-child(4) { left: 70%; font-size: 2.5rem; animation-delay: 4s; }
+        .floating-icons i:nth-child(5) { left: 85%; font-size: 2rem; animation-delay: 3s; }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.6; }
+            50% { transform: translateY(-50vh) translateX(30px) rotate(180deg); }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-110vh) translateX(-30px) rotate(360deg); opacity: 0; }
+        }
+
+        /* Main Container */
+        .app-container {
+            width: 100%;
+            max-width: 750px;
+            position: relative;
+            z-index: 2;
+            animation: fadeIn 1s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Hero Header */
+        .hero {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-area {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 80px;
+            background: var(--logo-bg);
+            border-radius: 50%;
+            box-shadow: 0 8px 24px var(--logo-shadow);
+            margin-bottom: 15px;
+            font-size: 2.2rem;
+            animation: pulse 2.5s infinite;
+            border: 1px solid var(--glass-border);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.06); }
+            100% { transform: scale(1); }
+        }
+
+        .hero h1 {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 2.8rem;
+            color: var(--text-dark);
+            text-shadow: 0 2px 4px rgba(255,255,255,0.1);
+            margin-bottom: 5px;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-dark);
+            opacity: 0.85;
+            font-weight: 600;
+            background: var(--glass-bg);
+            display: inline-block;
+            padding: 4px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 16px 32px var(--card-shadow);
+        }
+
+        /* Two-Column Form Structure */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px 25px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .input-group label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .input-group label i {
+            color: #FF9AA2;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 16px;
+            color: var(--text-light);
+            font-size: 1.1rem;
+            transition: color 0.3s ease;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 14px 16px 14px 45px;
+            border: 2px solid transparent;
+            border-radius: 14px;
+            background: var(--input-bg);
+            font-size: 1rem;
+            color: var(--text-dark);
+            font-weight: 600;
+            outline: none;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .input-wrapper input:focus {
+            background: var(--input-focus-bg);
+            border-color: var(--mint-dark);
+            box-shadow: 0 0 0 4px rgba(181, 234, 215, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .input-wrapper input:focus + i {
+            color: var(--mint-dark);
+        }
+
+        /* Gradient Button */
+        .btn-submit {
+            grid-column: span 2;
+            width: 100%;
+            padding: 16px;
+            margin-top: 15px;
+            border: none;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--pink-primary) 0%, var(--mint-primary) 100%);
+            color: #2C3E50;
+            font-size: 1.2rem;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(181, 234, 215, 0.4);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 183, 178, 0.6);
+        }
+
+        /* Loading Spinner Animation */
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(44, 62, 80, 0.2);
+            border-top: 3px solid #2C3E50;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Result Area */
+        .result-container {
+            margin-top: 30px;
+            text-align: center;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .result-card {
+            border-radius: 18px;
+            padding: 22px;
+            display: inline-block;
+            width: 100%;
+            font-size: 1.2rem;
+            font-weight: 600;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            text-align: left;
+            line-height: 1.5;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .result-high {
+            background: var(--result-high-bg);
+            border: 1px solid rgba(239, 68, 68, 0.15);
+            border-left: 6px solid var(--result-high-border);
+            color: var(--result-high-text);
+        }
+
+        .result-low {
+            background: var(--result-low-bg);
+            border: 1px solid rgba(16, 185, 129, 0.15);
+            border-left: 6px solid var(--result-low-border);
+            color: var(--result-low-text);
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 680px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .btn-submit { grid-column: span 1; }
+            .glass-card { padding: 25px 20px; }
+            .hero h1 { font-size: 2.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="theme-toggle-btn" id="themeToggle" aria-label="Toggle structural theme">
+        <i class="fa-solid fa-moon"></i>
+        <i class="fa-solid fa-sun"></i>
+    </button>
+
+    <div class="floating-icons">
+        <i class="fa-solid fa-heart-pulse"></i>
+        <i class="fa-solid fa-droplet"></i>
+        <i class="fa-solid fa-dna"></i>
+        <i class="fa-solid fa-stethoscope"></i>
+        <i class="fa-solid fa-kit-medical"></i>
+    </div>
+
+    <div class="app-container">
+        <header class="hero">
+            <div class="logo-area">🌸</div>
+            <h1>DiaBloom AI</h1>
+            <p>AI Powered Diabetes Risk Prediction</p>
+        </header>
+
+        <main class="glass-card">
+            <form id="predictionForm" action="/predict" method="POST">
+                <div class="form-grid">
+                    
+                    <div class="input-group">
+                        <label><i class="fa-solid fa-person-pregnant"></i> Pregnancies</label>
+                        <div class="input-wrapper">
+                            <input type="number" name="Pregnancies" min="0" placeholder="e.g., 2" required>
+                            <i class="fa-solid fa-hashtag"></i>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label><i class="fa-solid fa-cubes-sugar"></i> Glucose Level</label>
+                        <div class="input-wrapper">
+                            <input type="number" name="Glucose" min="0" placeholder="mg/dL (e.g., 120)" required>
+                            <i class="fa-solid fa-gauge-high"></i>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label><i class="fa-solid fa-heart"></i> Blood Pressure</label>
+                        <div class="input-wrapper">
+                            <input type="number" name="BloodPressure" min="0" placeholder="mm Hg (e.g., 80)" required>
+                            <i class="fa-solid fa-heart-pulse"></i>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label><i class="fa-solid fa-hand-holding-medical"></i> Skin Thickness</label>
+                        <div class="input-wrapper">
+                            <input type="number" name="SkinThickness" min="0" placeholder="mm (e.g., 20)" required>
+                            <i class="fa-solid fa-layer-group"></i>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label><i class="fa-solid fa-syringe"></i> Insulin Level</label>
+                        <div class="input-wrapper">
+                            <input type="number" name="Insulin" min="0" placeholder="mu U/ml (e.g., 85)" required>
+                            <i class="fa-solid fa-flask"></i>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label><i class="fa-solid fa-weight-scale"></i> Body Mass Index (BMI)</label>
+                        <div class="input-wrapper">
+                            <input type="number" step="0.1" name="BMI" min="0" placeholder="e.g., 26.5" required>
+                            <i class="fa-solid fa-calculator"></i>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label><i class="fa-solid fa-dna"></i> Pedigree Function</label>
+                        <div class="input-wrapper">
+                            <input type="number" step="0.001" name="DiabetesPedigreeFunction" min="0" placeholder="e.g., 0.47" required>
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label><i class="fa-solid fa-cake-candles"></i> Age</label>
+                        <div class="input-wrapper">
+                            <input type="number" name="Age" min="0" placeholder="Years (e.g., 33)" required>
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="submitBtn">
+                        <span class="btn-text">Predict Diabetes</span>
+                        <div class="spinner" id="btnSpinner"></div>
+                    </button>
+                </div>
+            </form>
+        </main>
+
+        {% if prediction_text %}
+        <section class="result-container">
+            <div class="result-card {% if 'High Risk' in prediction_text %}result-high{% else %}result-low{% endif %}">
+                {{ prediction_text }}
+            </div>
+        </section>
+        {% endif %}
+    </div>
+
+    <script>
+        // Form Loading Animation Logic
+        const form = document.getElementById('predictionForm');
+        const btn = document.getElementById('submitBtn');
+        const spinner = document.getElementById('btnSpinner');
+        const btnText = document.querySelector('.btn-text');
+
+        form.addEventListener('submit', function() {
+            btn.style.pointerEvents = 'none';
+            btnText.textContent = 'Analyzing details...';
+            spinner.style.display = 'block';
+        });
+
+        // Dynamic Dark/Light Mode Theme Toggle Logic
+        const themeToggle = document.getElementById('themeToggle');
+        
+        // Check for local storage settings to maintain preferences on refreshing
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        if (currentTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            let theme = 'light';
+            if (document.documentElement.getAttribute('data-theme') !== 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                theme = 'dark';
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+            localStorage.setItem('theme', theme);
+        });
+    </script>
+</body>
+</html>
