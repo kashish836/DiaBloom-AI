@@ -145,7 +145,7 @@ Through this project, I gained practical experience in:
 
 Kashish Bhiwapurkar
 
-Aspiring Python Developer | AI Enthusiast | Future Entrepreneur
+Aspiring Python Developer | AI Enthusiast 
 
 ## Connect
 
